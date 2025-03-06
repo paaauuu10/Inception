@@ -1,0 +1,46 @@
+#Definim la configuracio per al nginx
+server{
+	#Escoltem el port 443 i l'escoltem amb soport SSL/TLS (encriptat)
+	listen 443 ssl;
+	listen [::]:443 ssl;
+
+	#Manejem solicituds dirigides a ojimenez.42.fr
+	server_name pbotargu.42.fr;
+
+	#Configuracio SSL:
+	#Arxiu per xifrar les conexions HTTPS
+	ssl_certificate /etc/ssl/pbotargu.42.fr.pem;
+	#Arxiu de la clau privada associada al SSL
+	ssl_certificate_key /etc/ssl/pbotargu.42.fr.key;
+
+	#Defineix els protocols permesos
+	ssl_protocols TLSv1.2 TLSv1.3;
+
+	#Indica que no preferim xifrats del servidor per sobre dels del client. El client escull el xifrat que vulgui
+	ssl_prefer_server_ciphers off;
+
+	#Definim el directori arrel on es troben els arxius de la web
+	root /var/www/html;
+	#Arxiu predeterminat si no s'especifica
+	index index.php;
+
+	#Configuracio de les solicituds PHP
+	location ~ \.php$ {
+		#evitar solicituds no valides a PHP
+		try_files $uri =404;
+		#Enrutem al contenidor de WordPress
+		fastcgi_pass wordpress:9000;
+		#NOU
+		fastcgi_split_path_info ^(.+\.php)(/.+)$;
+		#Arxiu predeterminat per a FastCGI
+		fastcgi_index index.php;
+		#Parametres adicionals per configurar FastCGI
+		include fastcgi_params;
+		#Definim el nom del arxiu del scriot PHP que s'executa
+		fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+		#Info adicional sobre la ruta del script PHP
+		fastcgi_param PATH_INFO $fastcgi_path_info;
+		#NOU
+		fastcgi_read_timeout 300;
+	}
+}

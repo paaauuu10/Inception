@@ -1,0 +1,108 @@
+#Versio de la sintaxis
+#version: '3'
+
+services:
+  #Definición de nginx
+  nginx:
+    #Nom del contenidor
+    container_name: nginx
+
+    #Context de construccio del Dockerfile de nginx
+    build:
+      # Ruta al directori que contiene el Dockerfile i els arxius
+      context: ./requirements/nginx
+
+    # Serveis dls que depen el contenidor
+    depends_on:
+      - wordpress
+
+    #Indiquem el port
+    ports:
+      - "443:443"
+
+    #Montem el volum wordpress_data per al contenidor al path indicat
+    volumes:
+      - wordpress_data:/var/www/html
+
+    #Fem que sempre es reinicii
+    restart: always
+
+    #Les xarxes a les que es conecta el container
+    networks:
+      - pbotargu_net
+
+  #Comencem amb el contenidor de mariadb
+  mariadb:
+    #Nom del contenidor
+    container_name: mariadb
+
+    #Indiquem on esta el Dockerfile per fer la construccio
+    build:
+      context: ./requirements/mariadb
+
+    #Els volums que tenim al container (mariadb_data)
+    volumes:
+      - mariadb_data:/var/lib/mysql
+
+    #Reinici sempre
+    restart: always
+
+    #Indiquem que tenim el .env amb les variables d'entorn
+    env_file:
+      - .env
+
+    #Xarxes a les que es conecta el container
+    networks:
+      - pbotargu_net
+
+  #Comencem amb el container de WordPress
+  wordpress:
+    #Nom del contenidor
+    container_name: wordpress
+
+    #Indiquem el path del Dockerfile
+    build:
+      context: ./requirements/wordpress
+
+    #Indiquem del que depen
+    depends_on:
+      - mariadb
+
+    #Volums que es monten (wordpress_data)
+    volumes:
+      - wordpress_data:/var/www/html
+
+    #Indiquem que es reinicii sempre
+    restart: always
+
+    #Indiquem que hi ha el .env
+    env_file:
+      - .env
+
+    #Xarxes a les que es conecta
+    networks:
+      - pbotargu_net
+
+#Definim els volums
+volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      device: "/home/pau/data/mariadb"
+      o: bind
+      type: none
+
+  wordpress_data:
+    driver: local
+    driver_opts:
+      device: "/home/pau/data/wordpress"
+      o: bind
+      type: none
+
+#Definim les xarxes
+networks:
+  #Xarxa personalitzada que li posem de nom network de tipus bridge (entre contenidors i host)
+  pbotargu_net:
+    name: pbotargu_net
+    driver: bridge
+
