@@ -5,5 +5,7 @@ openssl req -newkey rsa:4096 -x509 -sha256 -days 365 -nodes -out /etc/ssl/pbotar
 fi
 exec "$@"
 
-# Iniciem nginx en primer pla (mode daemon es en segon pla)
-#nginx -g "daemon off;"
+#Checks if the SSL certificate exists.
+#If not, generates a new self-signed SSL certificate.
+#Ensures the script executes the main process properly.
+
