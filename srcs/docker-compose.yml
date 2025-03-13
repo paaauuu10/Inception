@@ -1,58 +1,79 @@
-#version: "3.8"
-
 services:
   nginx:
+    container_name: nginx
+
     build:
       context: ./requirements/nginx
-      dockerfile: Dockerfile
-    container_name: nginx
+
+    depends_on:
+      - wordpress
+
     ports:
       - "443:443"
+
     volumes:
       - wordpress_data:/var/www/html
-      - ./requirements/nginx/conf:/etc/nginx/conf.d  # o la ruta de tu config
-      - ./requirements/nginx/certs:/etc/nginx/certs
-    networks:
-      - inception_net
+
     restart: always
 
-  wordpress:
-    build:
-      context: ./requirements/wordpress
-      dockerfile: Dockerfile
-    container_name: wordpress
-    environment:
-      - WORDPRESS_DB_HOST=mariadb
-      - WORDPRESS_DB_USER=${MYSQL_USER}
-      - WORDPRESS_DB_PASSWORD=${MYSQL_PASSWORD}
-      - WORDPRESS_DB_NAME=${MYSQL_DATABASE}
-    volumes:
-      - wordpress_data:/var/www/html
     networks:
-      - inception_net
-    depends_on:
-      - mariadb
-    restart: always
+      - pbotargu_net
 
   mariadb:
+    container_name: mariadb
+
     build:
       context: ./requirements/mariadb
-      dockerfile: Dockerfile
-    container_name: mariadb
-    environment:
-      - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
-      - MYSQL_USER=${MYSQL_USER}
-      - MYSQL_PASSWORD=${MYSQL_PASSWORD}
-      - MYSQL_DATABASE=wordpress
+
     volumes:
-      - db_data:/var/lib/mysql
-    networks:
-      - inception_net
+      - mariadb_data:/var/lib/mysql
+
     restart: always
 
+    env_file:
+      - .env
+
+    networks:
+      - pbotargu_net
+
+  wordpress:
+    container_name: wordpress
+
+    build:
+      context: ./requirements/wordpress
+
+    depends_on:
+      - mariadb
+
+    volumes:
+      - wordpress_data:/var/www/html
+
+    restart: always
+
+    env_file:
+      - .env
+
+    networks:
+      - pbotargu_net
+
 volumes:
+  mariadb_data:
+    driver: local
+    driver_opts:
+      device: "/home/pbotargu/data/mariadb"
+      o: bind
+      type: none
+
   wordpress_data:
-  db_data:
+    driver: local
+    driver_opts:
+      device: "/home/pbotargu/data/wordpress"
+      o: bind
+      type: none
+
 
 networks:
-  inception_net:
+  pbotargu_net:
+    name: pbotargu_net
+    driver: bridge
+

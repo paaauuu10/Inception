@@ -1,25 +1,16 @@
-# Target por defecto: levanta los contenedores
-all: up
+CPATH=./srcs/docker-compose.yml
 
-# Levanta los contenedores en modo detached y construye las imágenes
-up:
-	cd srcs && docker compose up --build -d
+all:
+	@docker compose -f $(CPATH) up -d --build
 
-# Detiene y remueve los contenedores, redes y volúmenes definidos en srcs/docker-compose.yml
 down:
-	cd srcs && docker compose down
+	@docker compose -f $(CPATH) down
 
-# Reconstruye la infraestructura: baja y vuelve a levantar forzando la reconstrucción de las imágenes
-rebuild:
-	$(MAKE) down
-	$(MAKE) up
-
-# Muestra los logs de los contenedores en tiempo real
-logs:
-	cd srcs && docker compose logs -f
-
-# Limpia imágenes, contenedores y otros recursos no utilizados (opcional)
 clean:
-	docker system prune -f
+	@docker stop $$(docker ps -qa) || true; \
+	docker rm $$(docker ps -qa) || true; \
+	docker rmi -f $$(docker images -qa) || true; \
+	docker volume rm $$(docker volume ls -q) || true; \
+	docker network rm $$(docker network ls -q) 2>/dev/null || true;
 
-.PHONY: all up down rebuild logs clean
+.PHONY: all down clean

@@ -1,17 +1,20 @@
-# Usamos Alpine como base por ser ligera
-FROM alpine:latest
+FROM debian:bullseye
 
-# Instalamos NGINX y OpenSSL para manejar certificados
-RUN apk add --no-cache nginx openssl
+#Installing nginx && OpenSSL && cleaning cache
+RUN apt-get update && \
+	apt-get install -y nginx openssl && \
+	rm -rf /var/lib/apt/lists/*
 
-# Copiamos la configuración de NGINX (debes crear el archivo en srcs/requirements/nginx/conf/)
-COPY conf/nginx.conf /etc/nginx/nginx.conf
 
-# Copiamos los certificados TLS (ajusta la ruta si es necesario)
-COPY certs /etc/nginx/certs
+#Copying conf file
+COPY ./conf/default /etc/nginx/sites-enabled/default
 
-# Exponemos el puerto 443 (HTTPS)
+#Copying script && allowing execution
+COPY ./tools/script.sh /var/www/script.sh
+RUN chmod +x /var/www/script.sh
+
 EXPOSE 443
 
-# Iniciamos NGINX en modo daemon off
+ENTRYPOINT ["/var/www/script.sh"]
+
 CMD ["nginx", "-g", "daemon off;"]

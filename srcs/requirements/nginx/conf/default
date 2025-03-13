@@ -1,5 +1,6 @@
 server{
-	#Listening port 443 && suport with SSL/TLS	listen 443 ssl;
+	#Listening port 443 && suport with SSL/TLS	
+	listen 443 ssl;
 	listen [::]:443 ssl;
 
 	server_name pbotargu.42.fr;
