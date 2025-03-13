@@ -1,20 +1,24 @@
 FROM debian:bullseye
 
-#Getting mariadb
-RUN apt-get update && apt-get install -y mariadb-server
+#Instalació de Mariadb i d'algunes utilitats
+RUN apt-get update && \
+	apt-get install -y \
+	mariadb-server
 
-#Copying maridb conf
+#Copiem la configuracio de MariaDB sobreescrivint la default
 COPY ./conf/my.cnf /etc/mysql/mariadb.conf.d
 
-#Coying script && work with permition
+#Copiem l'script d'inicialització
 COPY ./tools/mariadb.sh /etc
 RUN chmod a+x /etc/mariadb.sh
 
-#Working on permision Mariadb
-RUN mkdir -p /var/run/mysqld && chown -R mysql:mysql /var/run/mysqld && chmod 775 /var/run/mysqld
+#Configuració de permisos per MariaDB
+RUN mkdir -p /var/run/mysqld \
+	&& chown -R mysql:mysql /var/run/mysqld \
+	&& chmod 775 /var/run/mysqld
 
-#Port where Mariadb listents
 EXPOSE 3306
 
-#Script
+#Script d'inicialització al iniciar el contenidor
 ENTRYPOINT ["/etc/mariadb.sh"]
+
