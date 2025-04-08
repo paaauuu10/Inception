@@ -1,7 +1,7 @@
 # INCEPTION PROJECT - README
 
 ## PROJECT OVERVIEW
-This project requires setting up a Docker-based infrastructure with NGINX, WordPress, and MariaDB containers following strict guidelines. The goal is to demonstrate system administration skills using Docker technology.
+This project requires setting up a Docker-based infrastructure with NGINX, WordPress, and MariaDB containers following strict guidelines. The goal is to demonstrate system administration skills using Docker technology
 
 ## REQUIREMENTS
 - Must be completed on a Virtual Machine
